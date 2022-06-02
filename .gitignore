@@ -41,3 +41,4 @@ vignettes/*.pdf
 data/
 meta/
 community-viz.R
+README.html
