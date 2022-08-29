@@ -1,7 +1,16 @@
 # community-viz
+
 Visualizations of community detection graphs
 
-![Grid of graphs showing TFI score communities at baseline, interim visit and final visit](figures/tfi-b-iv-fv.png)
+**Berlin:**
 
+![](figures/berlin_tfi_score-b-iv-fv.png)
 
-[Interactive version](https://unmnn.github.io/community-viz/figures/tfi-b-iv-fv.html)
+**Regensburg:**
+
+![](figures/regensburg_tfi_score-b-iv-fv.png)
+
+## Interactive versions
+
+[Berlin](https://unmnn.github.io/community-viz/figures/berlin_tfi_score-b-iv-fv.html)  
+[Regensburg](https://unmnn.github.io/community-viz/figures/regensburg_tfi_score-b-iv-fv.html)

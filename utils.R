@@ -2,6 +2,8 @@ prep_g <- function(file, layer, col_score, col_edge_weight) {
 
   file_exp <- dir("data", pattern = xfun::sans_ext(file), full.names = TRUE)
 
+  # test <- read_lines(file_exp) |>
+  #   str_replace("( +id )(.*)", "\\1\"\\2\"")
   # g contains edge data
   g <- igraph::read.graph(file_exp, format = "gml") |>
     igraph::as_long_data_frame() |>

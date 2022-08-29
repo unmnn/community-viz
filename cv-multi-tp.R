@@ -3,6 +3,7 @@
 # - Different number of communities
 # - TFI
 library(tidyverse)
+library(glue)
 library(igraph)
 library(ggraph)
 library(ggforce)
@@ -12,14 +13,16 @@ library(patchwork)
 
 source("utils.R", echo = FALSE)
 
-files <- c("Baseline" = "TFI_0_baseline.gml",
-           "Interim Visit" = "TFI_0_interim_visit.gml",
-           "Final Visit" = "TFI_0_final_visit.gml")
-col_score <- "TFI_score" # name of column for node coloring
+center <- "berlin"
+files <- c("Baseline" = glue("TFI_0_baseline_{center}.gml"),
+           "Interim Visit" = glue("TFI_0_interim_visit_{center}.gml"),
+           "Final Visit" = glue("TFI_0_final_visit_{center}.gml")
+)
+col_score <- "tfi_score" # name of column for node coloring
 col_edge_weight <- "value" # name of column representing the edge weights
 edge_weight_treshold <- 3 # edges with a weight below this threshold are not shown
 
-target_file <- "tfi-b-fv.rds"
+target_file <- glue("{center}_{col_score}-b-iv-fv.rds")
 
 if (!file.exists(paste0("data/", target_file))) {
   df <- map2_dfr(files, names(files), prep_g,
@@ -29,7 +32,6 @@ if (!file.exists(paste0("data/", target_file))) {
 } else {
   df <- read_rds(paste0("data/", target_file))
 }
-
 
 composite_graphs <- function(interactive = FALSE) {
   names(files) |>
@@ -73,19 +75,20 @@ gi <- girafe(
   width_svg = 50/2.54, height_svg = 18/2.54
 )
 
+out_name <- file.path("figures", xfun::sans_ext(target_file))
 gi
-htmlwidgets::saveWidget(gi, file = "figures/tfi-b-iv-fv.html", title = "community-viz")
+htmlwidgets::saveWidget(gi, file = glue("{out_name}.html"), title = "community-viz")
 
 ps <- composite_graphs(interactive = FALSE)
 ps
 ggsave(
-  "figures/tfi-b-iv-fv.pdf",
+  glue("{out_name}.pdf"),
   width = 30, height = 12, units = "cm",
   bg = "white",
   device = grDevices::cairo_pdf
 )
 ggsave(
-  "figures/tfi-b-iv-fv.png",
+  glue("{out_name}.png"),
   width = 30, height = 12, units = "cm",
   bg = "white", dpi = 600
 )
