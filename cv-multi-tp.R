@@ -56,7 +56,7 @@ gi <- girafe(
   options = list(
     ggiraph::opts_toolbar(saveaspng = FALSE),
     ggiraph::opts_hover_inv(css = "fill:#B3B3B3; stroke:#B3B3B3;"),
-    ggiraph::opts_hover(css = "fill:white;stroke:white;"),
+    ggiraph::opts_hover(css = "fill:blue;stroke:blue;"),
     ggiraph::opts_tooltip(css = paste(
       "background-color:white",
       "font-family: sans-serif",
@@ -67,28 +67,30 @@ gi <- girafe(
     ggiraph::opts_selection(
       only_shiny = FALSE,
       type = "single",
-      css = "fill:black; stroke:black;"
+      css = "fill:green; stroke:green;"
       ),
     ggiraph::opts_zoom(max = 5)
   ),
-  # width = 10/2.54, height = 8/2.54,
-  width_svg = 50/2.54, height_svg = 18/2.54
+  width_svg = 45/2.54, height_svg = 16/2.54
 )
 
 out_name <- file.path("figures", xfun::sans_ext(target_file))
-gi
-htmlwidgets::saveWidget(gi, file = glue("{out_name}.html"), title = "community-viz")
+# gi
+htmlwidgets::saveWidget(gi, file = glue("{out_name}.html"), 
+                        title = glue("communities-{center}"))
 
 ps <- composite_graphs(interactive = FALSE)
-ps
+# ps
 ggsave(
-  glue("{out_name}.pdf"),
-  width = 30, height = 12, units = "cm",
+  plot = ps,
+  filename = glue("{out_name}.pdf"),
+  width = 30, height = 10, units = "cm",
   bg = "white",
   device = grDevices::cairo_pdf
 )
 ggsave(
-  glue("{out_name}.png"),
-  width = 30, height = 12, units = "cm",
-  bg = "white", dpi = 600
+  plot = ps,
+  filename = glue("{out_name}.png"),
+  width = 30, height = 10, units = "cm",
+  bg = "white", dpi = 300 #!600
 )

@@ -2,8 +2,6 @@ prep_g <- function(file, layer, col_score, col_edge_weight) {
 
   file_exp <- dir("data", pattern = xfun::sans_ext(file), full.names = TRUE)
 
-  # test <- read_lines(file_exp) |>
-  #   str_replace("( +id )(.*)", "\\1\"\\2\"")
   # g contains edge data
   g <- igraph::read.graph(file_exp, format = "gml") |>
     igraph::as_long_data_frame() |>
@@ -84,8 +82,14 @@ plot_graph <- function(
     coord_equal() +
     ggforce::geom_voronoi_tile(
       data = df |> distinct(from_id, .keep_all = TRUE),
-      aes(x = from_x, y = from_y, fill = from_community, group = -1L),
+      aes(x = from_x, y = from_y, fill = from_score, group = -1L), # from_community
       alpha = 0.75, max.radius = 50, color = "white"
+    ) +
+    ggforce::geom_mark_hull(
+      data = df |> distinct(from_id, .keep_all = TRUE),
+      aes(x = from_x, y = from_y, group = from_community),
+      fill = NA, color = "gray25",
+      expand = unit(3, "mm"), concavity = 2, size = 0.25, radius = unit(3, "mm")
     ) +
     geom_segment(
       data = df |>
@@ -104,35 +108,60 @@ plot_graph <- function(
       breaks = 3,
       range = c(0.05, 0.5)
     ) +
-    scale_fill_manual(
-      values = custom_colors,
-      drop = FALSE
+    # scale_fill_distiller(
+    #   palette = "YlOrRd",
+    #   direction = 1,
+    #   limits = rng_score,
+    #   breaks = round(seq(rng_score[1], rng_score[2], length.out = 5))
+    # ) +
+    scale_fill_continuous(
+      low = "white", high = "#FF2501", # high = red
+      # direction = 1,
+      limits = rng_score,
+      breaks = round(seq(rng_score[1], rng_score[2], length.out = 5))
     ) +
+    # scale_fill_manual(
+    #   values = custom_colors,
+    #   drop = FALSE
+    # ) +
     # colorspace::scale_fill_discrete_qualitative("Warm") +
     # colorblindr::scale_fill_OkabeIto() +
     # scale_fill_brewer(palette = "Pastel2") +
-    guides(size = "none", alpha = "none", fill = "none") +
+    guides(size = "none", alpha = "none") +
+    guides(fill = guide_colorbar(
+      barheight = unit(0.65, "npc"),
+      ticks.colour = "gray80",
+      ticks.linewidth = 1
+    )) +
     labs(
       title = title,
-      color = paste0(node_color_legend_title, "\n(node color)"),
-      fill = "Community\n(cell color)"
+      # color = paste0(node_color_legend_title, "\n(node color)"),
+      # fill = "Community\n(cell color)"
+      fill = node_color_legend_title
     ) +
     theme_void(base_size = 14) +
     theme(plot.title = element_text(hjust = 0.5))
+  p
 
   if (!interactive) {
     p <- p +
       geom_point(
         data = df |> distinct(from_id, .keep_all = TRUE),
-        aes(x = from_x, y = from_y, color = from_score),
-        size = 3
+        aes(x = from_x, y = from_y), #, color = from_score
+        size = 3, color = "gray25"
       ) +
-      scale_color_distiller(
-        palette = "YlOrRd",
-        direction = 1,
-        limits = rng_score,
-        breaks = round(seq(rng_score[1], rng_score[2], length.out = 5))
-      )
+      geom_text(
+        data = df |> distinct(from_id, .keep_all = TRUE),
+        aes(x = from_x, y = from_y, label = as.character(from_community)),
+        size = 2, color = "white"
+      ) #+
+      # scale_color_distiller(
+      #   palette = "YlOrRd",
+      #   direction = 1,
+      #   limits = rng_score,
+      #   breaks = round(seq(rng_score[1], rng_score[2], length.out = 5))
+      # )
+    p
   }
 
   if (interactive) {
@@ -142,20 +171,31 @@ plot_graph <- function(
         aes(
           x = from_x,
           y = from_y,
-          color = from_score,
+          # color = from_score,
           tooltip = paste0("ID = ", from_id, "\n",
                            node_color_legend_title, " = ", from_score, "\n",
                            "Community = ", from_community),
           data_id = if (TRUE) from_id else from_community
         ),
-        size = 5
+        color = "gray25", size = 5
       ) +
-      scale_color_distiller(
-        palette = "YlOrRd",
-        direction = 1,
-        limits = rng_score,
-        breaks = round(seq(rng_score[1], rng_score[2], length.out = 5))
+      geom_text_interactive(
+        data = df |> distinct(from_id, .keep_all = TRUE),
+        aes(
+          x = from_x, y = from_y, label = as.character(from_community),
+          tooltip = paste0("ID = ", from_id, "\n",
+                           node_color_legend_title, " = ", from_score, "\n",
+                           "Community = ", from_community),
+          data_id = if (TRUE) from_id else from_community 
+          ),
+        size = 3, color = "white"
       )
+      # scale_color_distiller(
+      #   palette = "YlOrRd",
+      #   direction = 1,
+      #   limits = rng_score,
+      #   breaks = round(seq(rng_score[1], rng_score[2], length.out = 5))
+      # )
   }
 
   p
